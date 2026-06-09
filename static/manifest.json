@@ -1,0 +1,18 @@
+{
+  "name": "理理喵",
+  "short_name": "理理喵",
+  "description": "一只能帮你理清思绪的奶牛猫",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fdf6f0",
+  "theme_color": "#5c4a3a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/static/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

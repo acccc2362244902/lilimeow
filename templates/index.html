@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>理理喵</title>
+
+<!-- PWA Meta -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="理理喵">
+<link rel="apple-touch-icon" href="/static/icon.svg">
+<meta name="theme-color" content="#fdf6f0">
+<link rel="manifest" href="/static/manifest.json">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: linear-gradient(135deg, #fdf6f0 0%, #f7f0e8 100%);
+    height: 100vh;
+    color: #3d3027;
+    overflow: hidden;
+  }
+
+  /* ── Layout ── */
+  .app {
+    display: flex;
+    height: 100vh;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* ── Chat Panel ── */
+  .chat-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    border-right: 1px solid #e8ddd0;
+  }
+  .chat-header {
+    padding: 20px 24px 14px;
+    padding-top: max(20px, env(safe-area-inset-top));
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .chat-header-avatar {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    flex-shrink: 0;
+  }
+  .chat-header-text h1 {
+    font-size: 22px;
+    font-weight: 500;
+    color: #5c4a3a;
+    letter-spacing: 2px;
+  }
+  .chat-header-text p {
+    font-size: 12px;
+    color: #b8a490;
+    margin-top: 2px;
+  }
+
+  .chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0 20px 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .chat-messages::-webkit-scrollbar { width: 4px; }
+  .chat-messages::-webkit-scrollbar-thumb { background: #e0d5c5; border-radius: 2px; }
+
+  .msg {
+    max-width: 80%;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .msg.lili { align-self: flex-start; display: flex; gap: 8px; align-items: flex-end; }
+  .msg.user { align-self: flex-end; }
+
+  .msg-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    object-fit: cover;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  }
+
+  .msg-body { display: flex; flex-direction: column; }
+
+  .msg .bubble {
+    padding: 10px 14px;
+    border-radius: 16px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .msg.lili .bubble {
+    background: #fff;
+    color: #3d3027;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  }
+  .msg.user .bubble {
+    background: #d4a574;
+    color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg .time {
+    font-size: 11px;
+    color: #c4b5a5;
+    margin-top: 3px;
+    padding: 0 4px;
+  }
+
+  .chat-typing {
+    align-self: flex-start;
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+    padding: 0 0 0 0;
+  }
+  .chat-typing .typing-bubble {
+    padding: 10px 14px;
+    background: #fff;
+    border-radius: 16px;
+    border-bottom-left-radius: 4px;
+    color: #c4b5a5;
+    font-size: 13px;
+    display: none;
+  }
+  .chat-typing.show .typing-bubble { display: block; }
+  .chat-typing .msg-avatar { opacity: 0; }
+  .chat-typing.show .msg-avatar { opacity: 1; }
+
+  .chat-input-area {
+    padding: 12px 20px 20px;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+    flex-shrink: 0;
+  }
+  .chat-input-wrap {
+    display: flex;
+    gap: 8px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 6px 6px 6px 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+  }
+  .chat-input-wrap input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 14px;
+    color: #3d3027;
+    background: transparent;
+    padding: 8px 0;
+  }
+  .chat-input-wrap input::placeholder { color: #c4b5a5; }
+  .chat-input-wrap button {
+    border: none;
+    background: #d4a574;
+    color: #fff;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .chat-input-wrap button:hover { background: #c08d5a; }
+  .chat-input-wrap button:disabled { background: #d4c4b0; cursor: not-allowed; }
+
+  /* ── Todo Panel ── */
+  .todo-panel {
+    width: 360px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  .todo-panel::-webkit-scrollbar { width: 4px; }
+  .todo-panel::-webkit-scrollbar-thumb { background: #e0d5c5; border-radius: 2px; }
+
+  .todo-header {
+    padding: 20px 24px 14px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, #fdf6f0 0%, #fdf6f0 80%, transparent 100%);
+    z-index: 1;
+  }
+  .todo-header h2 {
+    font-size: 16px;
+    font-weight: 500;
+    color: #5c4a3a;
+  }
+
+  .todo-body { padding: 0 20px 24px; }
+
+  .todo-add {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 6px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.03);
+  }
+  .todo-add input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 13px;
+    padding: 8px 6px;
+    color: #3d3027;
+    background: transparent;
+  }
+  .todo-add input::placeholder { color: #c4b5a5; }
+  .todo-add select {
+    border: none;
+    outline: none;
+    font-size: 12px;
+    color: #5c4a3a;
+    background: #fdf6f0;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0 2px;
+  }
+  .todo-add button {
+    border: none;
+    background: #d4a574;
+    color: #fff;
+    font-size: 13px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  .todo-add button:hover { background: #c08d5a; }
+
+  .section { margin-bottom: 18px; }
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #b8a490;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+  }
+
+  .todo-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #fff;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+    transition: all 0.2s;
+    font-size: 13px;
+  }
+  .todo-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+  .todo-card.done { opacity: 0.4; }
+  .todo-card.done .todo-content { text-decoration: line-through; }
+
+  .todo-check {
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    border: 2px solid #d4c4b0;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .todo-check:hover { border-color: #c08d5a; }
+  .todo-card.done .todo-check { background: #c5b8a4; border-color: #c5b8a4; }
+
+  .priority-dot { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  .priority-高 { background: #e07b5a; }
+  .priority-中 { background: #d4a574; }
+  .priority-低 { background: #c4c4b4; }
+
+  .todo-content { flex: 1; line-height: 1.4; }
+  .todo-time { font-size: 11px; color: #c4b5a5; flex-shrink: 0; }
+
+  .todo-delete {
+    border: none; background: transparent;
+    color: #d4c4b0; font-size: 16px; cursor: pointer;
+    width: 24px; height: 24px; border-radius: 6px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .todo-delete:hover { background: #fef0eb; color: #d4846b; }
+
+  .empty {
+    text-align: center; padding: 24px 12px;
+    color: #c4b5a5; font-size: 12px; line-height: 2;
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+    background: #5c4a3a; color: #fff; padding: 8px 18px;
+    border-radius: 20px; font-size: 13px; opacity: 0;
+    transition: opacity 0.3s; pointer-events: none; z-index: 100;
+  }
+  .toast.show { opacity: 1; }
+
+  /* ── Responsive ── */
+  @media (max-width: 768px) {
+    .app { flex-direction: column; }
+    .chat-panel { border-right: none; border-bottom: 1px solid #e8ddd0; height: 55vh; }
+    .todo-panel { width: 100%; height: 45vh; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ──── Chat Panel ──── -->
+  <div class="chat-panel">
+    <div class="chat-header">
+      <img class="chat-header-avatar" src="/static/avatar.png" alt="理理喵">
+      <div class="chat-header-text">
+        <h1>理理喵</h1>
+        <p>想说就说，不想说就躺着。喵。</p>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <!-- dynamically filled -->
+    </div>
+    <div class="chat-typing" id="chat-typing">
+      <img class="msg-avatar" src="/static/avatar.png" alt="理理喵">
+      <span class="typing-bubble">理理正在打字...</span>
+    </div>
+    <div class="chat-input-area">
+      <div class="chat-input-wrap">
+        <input type="text" id="chat-input" placeholder="说点什么..."
+               onkeydown="if(event.key==='Enter')send()" autofocus>
+        <button onclick="send()" id="send-btn">↑</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──── Todo Panel ──── -->
+  <div class="todo-panel">
+    <div class="todo-header"><h2>待办</h2></div>
+    <div class="todo-body">
+      <div class="todo-add">
+        <input type="text" id="new-todo-input" placeholder="加一件事..."
+               onkeydown="if(event.key==='Enter')addTodo()">
+        <select id="new-todo-priority">
+          <option value="中">其次</option>
+          <option value="高">先做</option>
+          <option value="低">有空做</option>
+        </select>
+        <button onclick="addTodo()">＋</button>
+      </div>
+      <div id="todo-container"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════ Chat ═══════════════
+let sending = false;
+
+async function loadChatHistory() {
+  try {
+    const r = await fetch('/api/chat/history');
+    const data = await r.json();
+    const container = document.getElementById('chat-messages');
+    container.innerHTML = '';
+    if (data.messages.length === 0) {
+      // Show initial greeting
+      const now = new Date();
+      const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      container.innerHTML = `
+        <div class="msg lili">
+          <img class="msg-avatar" src="/static/avatar.png" alt="理理喵">
+          <div class="msg-body">
+            <div class="bubble">喵。今天怎么样？</div>
+            <div class="time">${time}</div>
+          </div>
+        </div>`;
+    } else {
+      data.messages.forEach(m => appendMessage(m.role === 'assistant' ? 'lili' : 'user', m.content, false));
+    }
+    scrollChat();
+  } catch(e) {
+    console.error('加载聊天记录失败', e);
+  }
+}
+
+function appendMessage(role, content, scroll = true) {
+  const container = document.getElementById('chat-messages');
+  const now = new Date();
+  const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
+  if (role === 'lili') {
+    div.innerHTML = `
+      <img class="msg-avatar" src="/static/avatar.png" alt="理理喵">
+      <div class="msg-body">
+        <div class="bubble">${escHtml(content)}</div>
+        <div class="time">${time}</div>
+      </div>`;
+  } else {
+    div.innerHTML = `<div class="bubble">${escHtml(content)}</div><div class="time">${time}</div>`;
+  }
+  container.appendChild(div);
+  if (scroll) scrollChat();
+}
+
+function scrollChat() {
+  const container = document.getElementById('chat-messages');
+  setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+}
+
+async function send() {
+  if (sending) return;
+  const input = document.getElementById('chat-input');
+  const message = input.value.trim();
+  if (!message) return;
+
+  sending = true;
+  input.value = '';
+  document.getElementById('send-btn').disabled = true;
+
+  appendMessage('user', message);
+
+  // Show typing
+  const typing = document.getElementById('chat-typing');
+  typing.classList.add('show');
+  scrollChat();
+
+  try {
+    const r = await fetch('/api/chat', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({message})
+    });
+    const data = await r.json();
+    typing.classList.remove('show');
+
+    if (data.ok) {
+      appendMessage('lili', data.reply);
+      await loadTodos();
+      if (data.todosUpdated) toast('待办已更新');
+    } else {
+      appendMessage('lili', '唔…出了点问题：' + (data.error || '未知错误'));
+    }
+  } catch(e) {
+    typing.classList.remove('show');
+    appendMessage('lili', '好像连不上……刷新试试？');
+  }
+
+  sending = false;
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('chat-input').focus();
+}
+
+// ═══════════════ Todos ═══════════════
+let todos = [];
+
+async function loadTodos() {
+  try {
+    const r = await fetch('/api/todos');
+    const data = await r.json();
+    todos = data.todos || [];
+    renderTodos();
+  } catch(e) { console.error('加载待办失败', e); }
+}
+
+function renderTodos() {
+  const container = document.getElementById('todo-container');
+  const pending = todos.filter(t => t.status !== 'done');
+  const done = todos.filter(t => t.status === 'done');
+
+  if (!pending.length && !done.length) {
+    container.innerHTML = `<div class="empty">还没有待办。<br>跟理理说「帮我理理」<br>或者自己加一个。</div>`;
+    return;
+  }
+
+  const high = pending.filter(t => t.priority === '高');
+  const mid = pending.filter(t => t.priority === '中');
+  const low = pending.filter(t => t.priority === '低');
+
+  let html = '';
+  const renderGroup = (title, items) => {
+    if (!items.length) return;
+    html += `<div class="section"><div class="section-title">${title}</div>`;
+    items.forEach(t => {
+      const origIdx = todos.indexOf(t);
+      const icon = t.type === 'soothe' ? '🧘' : '📋';
+      html += `
+        <div class="todo-card${t.status === 'done' ? ' done' : ''}" data-idx="${origIdx}">
+          <div class="todo-check" onclick="toggle(${origIdx})"></div>
+          <div class="priority-dot priority-${t.priority || '中'}"></div>
+          <span class="todo-icon">${icon}</span>
+          <span class="todo-content">${escHtml(t.content)}</span>
+          <span class="todo-time">${escHtml(t.estimated_time || '')}</span>
+          <button class="todo-delete" onclick="remove(${origIdx})" title="删除">×</button>
+        </div>`;
+    });
+    html += `</div>`;
+  };
+
+  renderGroup('📋 先做', high);
+  renderGroup('📋 其次', mid);
+  renderGroup('📋 有空做', low);
+
+  if (done.length) {
+    html += `<div class="section"><div class="section-title">✅ 搞定了</div>`;
+    done.forEach(t => {
+      const origIdx = todos.indexOf(t);
+      html += `
+        <div class="todo-card done" data-idx="${origIdx}">
+          <div class="todo-check" onclick="toggle(${origIdx})"></div>
+          <span class="todo-content">${escHtml(t.content)}</span>
+          <button class="todo-delete" onclick="remove(${origIdx})" title="删除">×</button>
+        </div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+async function toggle(idx) {
+  try {
+    const r = await fetch('/api/toggle', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({index: idx})
+    });
+    if (r.ok) {
+      const data = await r.json();
+      todos[idx].status = data.status;
+      renderTodos();
+    }
+  } catch(e) { toast('出错了'); }
+}
+
+async function remove(idx) {
+  try {
+    const r = await fetch('/api/delete', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({index: idx})
+    });
+    if (r.ok) { todos.splice(idx, 1); renderTodos(); }
+  } catch(e) { toast('出错了'); }
+}
+
+async function addTodo() {
+  const input = document.getElementById('new-todo-input');
+  const priority = document.getElementById('new-todo-priority');
+  const content = input.value.trim();
+  if (!content) return;
+  try {
+    const r = await fetch('/api/add', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({content, priority: priority.value, type: 'task'})
+    });
+    if (r.ok) { input.value = ''; await loadTodos(); toast('加好了'); }
+  } catch(e) { toast('出错了'); }
+}
+
+// ═══════════════ Utils ═══════════════
+function escHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 1800);
+}
+
+// ═══════════════ Init ═══════════════
+loadChatHistory();
+loadTodos();
+document.getElementById('chat-input').focus();
+
+// Service Worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/static/sw.js');
+}
+</script>
+
+</body>
+</html>

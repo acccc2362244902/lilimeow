@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 奶牛猫 -->
+  <rect width="512" height="512" rx="100" fill="#fdf6f0"/>
+  <!-- 身体 -->
+  <ellipse cx="256" cy="320" rx="120" ry="95" fill="#3d3027"/>
+  <!-- 白色胸腹 -->
+  <ellipse cx="256" cy="340" rx="70" ry="60" fill="#faf8f5"/>
+  <!-- 头 -->
+  <ellipse cx="256" cy="210" rx="90" ry="75" fill="#3d3027"/>
+  <!-- 面部白色区域 -->
+  <ellipse cx="256" cy="225" rx="55" ry="45" fill="#faf8f5"/>
+  <!-- 耳朵 -->
+  <polygon points="180,160 195,100 220,145" fill="#3d3027"/>
+  <polygon points="190,150 198,115 215,142" fill="#e8b4b4"/>
+  <polygon points="332,160 317,100 292,145" fill="#3d3027"/>
+  <polygon points="322,150 314,115 297,142" fill="#e8b4b4"/>
+  <!-- 眼睛 -->
+  <ellipse cx="230" cy="205" rx="18" ry="20" fill="#faf8f5"/>
+  <ellipse cx="282" cy="205" rx="18" ry="20" fill="#faf8f5"/>
+  <ellipse cx="232" cy="207" rx="10" ry="12" fill="#5c8a3a"/>
+  <ellipse cx="280" cy="207" rx="10" ry="12" fill="#5c8a3a"/>
+  <ellipse cx="234" cy="204" rx="5" ry="6" fill="#111"/>
+  <ellipse cx="278" cy="204" rx="5" ry="6" fill="#111"/>
+  <!-- 鼻子 -->
+  <ellipse cx="256" cy="222" rx="8" ry="5" fill="#e8b4b4"/>
+  <!-- 嘴 -->
+  <path d="M248,228 Q256,236 264,228" fill="none" stroke="#5c4a3a" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- 胡须 -->
+  <line x1="140" y1="215" x2="205" y2="218" stroke="#3d3027" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="142" y1="228" x2="207" y2="226" stroke="#3d3027" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="372" y1="215" x2="307" y2="218" stroke="#3d3027" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <line x1="370" y1="228" x2="305" y2="226" stroke="#3d3027" stroke-width="2" stroke-linecap="round" opacity="0.5"/>
+  <!-- 额头花纹 -->
+  <path d="M230,170 Q256,155 282,170" fill="none" stroke="#5c4a3a" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="256" cy="168" r="8" fill="#5c4a3a"/>
+  <!-- 尾巴 -->
+  <path d="M370,350 Q420,330 430,280 Q435,260 420,250" fill="none" stroke="#3d3027" stroke-width="16" stroke-linecap="round"/>
+  <path d="M420,250 Q410,245 418,255" fill="none" stroke="#faf8f5" stroke-width="6" stroke-linecap="round"/>
+</svg>

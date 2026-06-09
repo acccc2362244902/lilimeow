@@ -1,0 +1,23 @@
+{
+  "todos": [
+    {
+      "type": "task",
+      "content": "投实习简历",
+      "priority": "高",
+      "estimated_time": "30min"
+    },
+    {
+      "type": "task",
+      "content": "晚饭后学考公一小时",
+      "priority": "中",
+      "estimated_time": "1h"
+    },
+    {
+      "type": "soothe",
+      "content": "现在到晚饭前彻底放松，什么都不想",
+      "priority": "中",
+      "estimated_time": "2h"
+    }
+  ],
+  "updated": "2026-06-09"
+}
