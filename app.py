@@ -81,11 +81,12 @@ def safe_json_parse(text):
     return json.loads(text)
 
 # ── 记忆更新 ──
-def update_memory(conversation_text):
-    try:
-        client = get_client()
-    except RuntimeError:
-        return
+def update_memory(conversation_text, client=None):
+    if client is None:
+        try:
+            client = get_client()
+        except RuntimeError:
+            return
     mem = load_json(MEMORY_FILE, {"config": {}, "learned": {"triggers": [], "soothers": [], "traits": [], "dislikes": []}, "chat_count": 0})
     learned = mem.get("learned", {})
 
@@ -120,11 +121,12 @@ def update_memory(conversation_text):
     save_json(MEMORY_FILE, mem)
 
 # ── 待办提取 ──
-def extract_todos(conversation_text):
-    try:
-        client = get_client()
-    except RuntimeError:
-        return []
+def extract_todos(conversation_text, client=None):
+    if client is None:
+        try:
+            client = get_client()
+        except RuntimeError:
+            return []
     existing = load_json(TODOS_FILE, {"todos": []})
     existing_str = json.dumps(existing.get("todos", []), ensure_ascii=False)
     mem = load_json(MEMORY_FILE, {})
@@ -255,8 +257,13 @@ def api_chat():
     if not user_message:
         return jsonify({"ok": False, "error": "empty message"}), 400
 
+    # 优先使用前端传的 API key（多用户支持），回退到服务端 key
+    user_key = body.get("api_key", "").strip()
     try:
-        client = get_client()
+        if user_key:
+            client = OpenAI(api_key=user_key, base_url="https://api.deepseek.com")
+        else:
+            client = get_client()
     except RuntimeError as e:
         return jsonify({"ok": False, "error": str(e)}), 400
 
@@ -297,7 +304,7 @@ def api_chat():
         f"{'理理喵' if m['role'] == 'assistant' else '你'}: {m['content'][:200]}"
         for m in chat_data["messages"][-8:]
     ])
-    update_memory(recent)
+    update_memory(recent, client=client if user_key else None)
 
     # 后台提取待办
     new_todos = []
@@ -306,12 +313,13 @@ def api_chat():
             f"{'理理喵' if m['role'] == 'assistant' else '你'}: {m['content'][:300]}"
             for m in chat_data["messages"][-12:]
         ])
-        new_todos = extract_todos(recent_full)
+        new_todos = extract_todos(recent_full, client=client if user_key else None)
 
     return jsonify({
         "ok": True,
         "reply": reply,
         "todosUpdated": len(new_todos) > 0,
+        "newTodos": new_todos,
     })
 
 @app.route("/api/chat/history")
@@ -325,6 +333,14 @@ def api_chat_history():
 def api_chat_clear():
     if CHAT_FILE.exists():
         CHAT_FILE.unlink()
+    return jsonify({"ok": True})
+
+@app.route("/api/reset", methods=["POST"])
+def api_reset():
+    """一键重置：清空聊天、记忆、待办"""
+    for f in [CHAT_FILE, MEMORY_FILE, TODOS_FILE]:
+        if f.exists():
+            f.unlink()
     return jsonify({"ok": True})
 
 # ── 状态检查 ──

@@ -53,6 +53,7 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     flex-shrink: 0;
   }
+  .chat-header-text { flex: 1; }
   .chat-header-text h1 {
     font-size: 22px;
     font-weight: 500;
@@ -64,6 +65,16 @@
     color: #b8a490;
     margin-top: 2px;
   }
+
+  .settings-btn {
+    border: none; background: transparent;
+    font-size: 20px; cursor: pointer;
+    width: 36px; height: 36px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s; color: #b8a490;
+    flex-shrink: 0;
+  }
+  .settings-btn:hover { background: #f0e8db; }
 
   .chat-messages {
     flex: 1;
@@ -309,15 +320,156 @@
     position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
     background: #5c4a3a; color: #fff; padding: 8px 18px;
     border-radius: 20px; font-size: 13px; opacity: 0;
-    transition: opacity 0.3s; pointer-events: none; z-index: 100;
+    transition: opacity 0.3s; pointer-events: none; z-index: 200;
   }
   .toast.show { opacity: 1; }
 
+  /* ── Settings Modal ── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.3);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 300; opacity: 0; pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .modal-overlay.show { opacity: 1; pointer-events: auto; }
+
+  .modal-box {
+    background: #fff; border-radius: 16px; padding: 24px;
+    width: calc(100% - 48px); max-width: 380px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    display: flex; flex-direction: column; gap: 18px;
+  }
+  .modal-box h3 {
+    font-size: 16px; font-weight: 500; color: #5c4a3a;
+  }
+  .modal-box label {
+    font-size: 12px; color: #b8a490; display: block; margin-bottom: 4px;
+  }
+  .modal-box input {
+    width: 100%; border: 1px solid #e8ddd0; border-radius: 10px;
+    padding: 10px 12px; font-size: 13px; color: #3d3027;
+    outline: none; transition: border 0.2s;
+  }
+  .modal-box input:focus { border-color: #d4a574; }
+  .modal-box .hint {
+    font-size: 11px; color: #c4b5a5; margin-top: 2px;
+  }
+  .modal-box .btn-row {
+    display: flex; gap: 8px; justify-content: flex-end;
+  }
+  .modal-box button {
+    padding: 8px 18px; border-radius: 10px; font-size: 13px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-save {
+    border: none; background: #d4a574; color: #fff;
+  }
+  .btn-save:hover { background: #c08d5a; }
+  .btn-cancel {
+    border: 1px solid #e8ddd0; background: #fff; color: #5c4a3a;
+  }
+  .btn-cancel:hover { background: #fdf6f0; }
+  .btn-danger {
+    border: none; background: #fef0eb; color: #d4846b;
+  }
+  .btn-danger:hover { background: #fde0d5; }
+  .modal-divider {
+    border: none; border-top: 1px solid #f0e8db; margin: 4px 0;
+  }
+
+  /* ── Embedded Todo Cards (chat flow) ── */
+  .todo-cards {
+    display: flex; flex-direction: column; gap: 4px;
+    margin-top: 6px;
+  }
+  .todo-card-inline {
+    display: flex; align-items: center; gap: 8px;
+    background: #fdf6f0; border-radius: 10px;
+    padding: 8px 10px; font-size: 13px;
+    transition: opacity 0.2s;
+  }
+  .todo-card-inline.done { opacity: 0.4; }
+  .todo-card-inline.done .todo-content-inline { text-decoration: line-through; }
+  .todo-check-inline {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid #d4c4b0; flex-shrink: 0; cursor: pointer;
+  }
+  .todo-card-inline.done .todo-check-inline { background: #c5b8a4; border-color: #c5b8a4; }
+  .todo-content-inline { flex: 1; line-height: 1.3; }
+
   /* ── Responsive ── */
   @media (max-width: 768px) {
-    .app { flex-direction: column; }
-    .chat-panel { border-right: none; border-bottom: 1px solid #e8ddd0; height: 55vh; }
-    .todo-panel { width: 100%; height: 45vh; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    .app {
+      height: 100dvh;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+    .chat-panel {
+      border-right: none;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .chat-input-area {
+      flex-shrink: 0;
+      padding-bottom: max(56px, calc(env(safe-area-inset-bottom) + 44px));
+    }
+    .chat-panel.shifted {
+      pointer-events: none;
+    }
+    .todo-panel {
+      display: none;
+      position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+      width: 100%;
+      background: #fdf6f0;
+      z-index: 10;
+      flex-direction: column;
+    }
+    .todo-panel.show { display: flex; }
+    .todo-body {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: max(56px, calc(env(safe-area-inset-bottom) + 44px));
+    }
+
+    /* ── Mobile tab bar ── */
+    .tab-bar {
+      display: flex;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: #fff; border-top: 1px solid #e8ddd0;
+      padding-bottom: env(safe-area-inset-bottom);
+      z-index: 50;
+    }
+    .tab-btn {
+      flex: 1; padding: 12px 0;
+      border: none; background: transparent;
+      font-size: 13px; color: #b8a490; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .tab-btn.active { color: #5c4a3a; font-weight: 500; }
+    .tab-badge {
+      display: inline-block; background: #e07b5a; color: #fff;
+      font-size: 10px; padding: 1px 6px; border-radius: 10px;
+      margin-left: 2px;
+    }
+  }
+
+  /* Hide tab bar on desktop */
+  .tab-bar { display: none; }
+  @media (max-width: 768px) {
+    .tab-bar { display: flex; }
   }
 </style>
 </head>
@@ -332,6 +484,7 @@
         <h1>理理喵</h1>
         <p>想说就说，不想说就躺着。喵。</p>
       </div>
+      <button class="settings-btn" onclick="openSettings()" title="设置">⚙</button>
     </div>
     <div class="chat-messages" id="chat-messages">
       <!-- dynamically filled -->
@@ -350,7 +503,7 @@
   </div>
 
   <!-- ──── Todo Panel ──── -->
-  <div class="todo-panel">
+  <div class="todo-panel" id="todo-panel">
     <div class="todo-header"><h2>待办</h2></div>
     <div class="todo-body">
       <div class="todo-add">
@@ -371,7 +524,81 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Mobile Tab Bar -->
+<div class="tab-bar" id="tab-bar">
+  <button class="tab-btn active" id="tab-chat-btn" onclick="switchTab('chat')">💬 聊天</button>
+  <button class="tab-btn" id="tab-todo-btn" onclick="switchTab('todo')">
+    📋 待办 <span class="tab-badge" id="todo-badge" style="display:none">0</span>
+  </button>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeSettings(event)">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <h3>⚙ 设置</h3>
+
+    <div>
+      <label>DeepSeek API Key</label>
+      <input type="password" id="settings-apikey" placeholder="sk-...（留空使用服务端默认）">
+      <div class="hint">你的 key 只存在浏览器本地，不会上传到服务器。</div>
+    </div>
+
+    <hr class="modal-divider">
+
+    <div>
+      <label>重置</label>
+      <button class="btn-danger" onclick="resetAll()">🗑 清除所有数据</button>
+      <div class="hint" style="margin-top:4px">清空聊天记录、记忆和待办，不能恢复。</div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-cancel" onclick="closeSettings()">取消</button>
+      <button class="btn-save" onclick="saveSettings()">保存</button>
+    </div>
+  </div>
+</div>
+
 <script>
+// ═══════════════ Settings ═══════════════
+function getApiKey() {
+  return localStorage.getItem('lili_user_apikey') || '';
+}
+
+function openSettings() {
+  document.getElementById('settings-apikey').value = getApiKey();
+  document.getElementById('modal-overlay').classList.add('show');
+}
+
+function closeSettings(e) {
+  if (e && e.target !== document.getElementById('modal-overlay')) return;
+  document.getElementById('modal-overlay').classList.remove('show');
+}
+
+function saveSettings() {
+  const key = document.getElementById('settings-apikey').value.trim();
+  if (key) {
+    localStorage.setItem('lili_user_apikey', key);
+  } else {
+    localStorage.removeItem('lili_user_apikey');
+  }
+  document.getElementById('modal-overlay').classList.remove('show');
+  toast(key ? '已保存，现在用的是你的 key' : '已清除，使用服务端默认 key');
+}
+
+async function resetAll() {
+  if (!confirm('确定要清空所有数据吗？聊天记录、待办、记忆都会消失，不能恢复。')) return;
+  try {
+    await fetch('/api/reset', { method: 'POST' });
+    localStorage.removeItem('lili_user_apikey');
+    document.getElementById('modal-overlay').classList.remove('show');
+    await loadChatHistory();
+    await loadTodos();
+    toast('全部重置了，理理喵是新的了');
+  } catch(e) {
+    toast('重置失败，再试一次');
+  }
+}
+
 // ═══════════════ Chat ═══════════════
 let sending = false;
 
@@ -382,14 +609,16 @@ async function loadChatHistory() {
     const container = document.getElementById('chat-messages');
     container.innerHTML = '';
     if (data.messages.length === 0) {
-      // Show initial greeting
       const now = new Date();
       const time = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+      const greeting = data.is_first_run
+        ? '喵，你睡醒啦！我是理理喵，如果你想要我帮你安排，请说：帮我理理！'
+        : '喵。今天怎么样？';
       container.innerHTML = `
         <div class="msg lili">
           <img class="msg-avatar" src="/static/avatar.png" alt="理理喵">
           <div class="msg-body">
-            <div class="bubble">喵。今天怎么样？</div>
+            <div class="bubble">${escHtml(greeting)}</div>
             <div class="time">${time}</div>
           </div>
         </div>`;
@@ -422,6 +651,70 @@ function appendMessage(role, content, scroll = true) {
   if (scroll) scrollChat();
 }
 
+function appendTodoCards(newTodos) {
+  // 在最后一条 lili 消息后面嵌入待办卡片
+  const msgs = document.querySelectorAll('.msg.lili');
+  if (!msgs.length) return;
+  const lastMsg = msgs[msgs.length - 1];
+  // 找到 bubble 容器
+  const bubble = lastMsg.querySelector('.bubble');
+  const body = lastMsg.querySelector('.msg-body');
+  if (!body) return;
+
+  const cardsDiv = document.createElement('div');
+  cardsDiv.className = 'todo-cards';
+
+  newTodos.forEach((t, i) => {
+    const icon = t.type === 'soothe' ? '🧘' : '📋';
+    const card = document.createElement('div');
+    card.className = 'todo-card-inline';
+    card.setAttribute('data-todo-idx', '-1'); // 等 loadTodos 后更新
+    card.setAttribute('data-todo-content', t.content);
+    card.innerHTML = `
+      <div class="todo-check-inline" onclick="event.stopPropagation(); toggleInlineCard(this)"></div>
+      <span>${icon}</span>
+      <span class="todo-content-inline">${escHtml(t.content)}</span>
+    `;
+    cardsDiv.appendChild(card);
+  });
+
+  body.appendChild(cardsDiv);
+  // 加载 todos 后同步索引
+  setTimeout(() => syncInlineCardIndexes(cardsDiv), 200);
+}
+
+function syncInlineCardIndexes(cardsDiv) {
+  const cards = cardsDiv.querySelectorAll('.todo-card-inline');
+  cards.forEach(card => {
+    const content = card.getAttribute('data-todo-content');
+    const idx = todos.findIndex(t => t.content === content);
+    card.setAttribute('data-todo-idx', idx);
+  });
+}
+
+async function toggleInlineCard(checkEl) {
+  const card = checkEl.parentElement;
+  const idx = parseInt(card.getAttribute('data-todo-idx'));
+  if (idx < 0 || idx >= todos.length) return;
+
+  try {
+    const r = await fetch('/api/toggle', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({index: idx})
+    });
+    if (r.ok) {
+      const data = await r.json();
+      if (data.status === 'done') {
+        card.classList.add('done');
+      } else {
+        card.classList.remove('done');
+      }
+      await loadTodos();
+    }
+  } catch(e) { /* ignore */ }
+}
+
 function scrollChat() {
   const container = document.getElementById('chat-messages');
   setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
@@ -439,22 +732,30 @@ async function send() {
 
   appendMessage('user', message);
 
-  // Show typing
   const typing = document.getElementById('chat-typing');
   typing.classList.add('show');
   scrollChat();
 
   try {
+    const body = { message };
+    const userKey = getApiKey();
+    if (userKey) body.api_key = userKey;
+
     const r = await fetch('/api/chat', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({message})
+      body: JSON.stringify(body)
     });
     const data = await r.json();
     typing.classList.remove('show');
 
     if (data.ok) {
       appendMessage('lili', data.reply);
+      // 嵌入待办卡片
+      if (data.newTodos && data.newTodos.length > 0) {
+        appendTodoCards(data.newTodos);
+        scrollChat();
+      }
       await loadTodos();
       if (data.todosUpdated) toast('待办已更新');
     } else {
@@ -467,7 +768,6 @@ async function send() {
 
   sending = false;
   document.getElementById('send-btn').disabled = false;
-  document.getElementById('chat-input').focus();
 }
 
 // ═══════════════ Todos ═══════════════
@@ -535,6 +835,7 @@ function renderTodos() {
   }
 
   container.innerHTML = html;
+  updateTodoBadge();
 }
 
 async function toggle(idx) {
@@ -592,12 +893,55 @@ function toast(msg) {
   setTimeout(() => el.classList.remove('show'), 1800);
 }
 
+// ═══════════════ Mobile Tabs ═══════════════
+// ═══════════════ Mobile Tabs ═══════════════
+function switchTab(tab) {
+  const chatBtn = document.getElementById('tab-chat-btn');
+  const todoBtn = document.getElementById('tab-todo-btn');
+  const todoPanel = document.getElementById('todo-panel');
+
+  if (tab === 'todo') {
+    chatBtn.classList.remove('active');
+    todoBtn.classList.add('active');
+    todoPanel.classList.add('show');
+  } else {
+    chatBtn.classList.add('active');
+    todoBtn.classList.remove('active');
+    todoPanel.classList.remove('show');
+  }
+}
+
+function updateTodoBadge() {
+  const pending = todos.filter(t => t.status !== 'done').length;
+  const badge = document.getElementById('todo-badge');
+  if (pending > 0) {
+    badge.style.display = 'inline-block';
+    badge.textContent = pending;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+// ═══════════════ Keyboard fix (mobile) ═══════════════
+function fixViewport() {
+  const app = document.querySelector('.app');
+  if (!app) return;
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  app.style.height = h + 'px';
+  // 键盘弹起时滚到最新消息
+  scrollChat();
+}
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', fixViewport);
+  window.visualViewport.addEventListener('scroll', fixViewport);
+}
+fixViewport();
+
 // ═══════════════ Init ═══════════════
 loadChatHistory();
 loadTodos();
 document.getElementById('chat-input').focus();
 
-// Service Worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/static/sw.js');
 }
